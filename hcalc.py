@@ -5,9 +5,11 @@ import matplotlib.pyplot as plt
 from streamlit import session_state as ss
 
 def reset_fields():
-    for key in ss.keys():
-        del ss[key]
-
+    for key in list(ss.keys()):
+        if key != 'test_type':
+            del ss[key]
+            
+  
 def calculate_one_sample_t_test(sample_size, sample_mean, sample_std, hypothesized_mean, alpha, test_type, alternative):
     t_statistic = (sample_mean - hypothesized_mean) / (sample_std / np.sqrt(sample_size))
     df = sample_size - 1
@@ -188,7 +190,7 @@ elif test_type == "Chi-Square Goodness of Fit Test":
     expected = [st.number_input(f"Expected Frequency {i+1}", min_value=0.0001, step=1.0, value=ss.expected[i] if i < len(ss.expected) else 10.0, key=f'expected_{i}') for i in range(num_categories)]
     
     if 'alpha' not in ss:
-        ss.alpha = 0.05
+        ss.alpha 
     alpha = st.number_input("Significance Level (α)", min_value=0.01, max_value=0.99, value=ss.alpha, step=0.01, key='alpha')
     
 col1, col2 = st.columns(2)
