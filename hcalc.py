@@ -2,6 +2,11 @@ import streamlit as st
 import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
+from streamlit import session_state as ss
+
+def reset_fields():
+    for key in ss.keys():
+        del ss[key]
 
 def calculate_one_sample_t_test(sample_size, sample_mean, sample_std, hypothesized_mean, alpha, test_type, alternative):
     t_statistic = (sample_mean - hypothesized_mean) / (sample_std / np.sqrt(sample_size))
@@ -81,47 +86,122 @@ test_type = st.selectbox("Select Test Type", [
 ])
 
 # Common inputs
-alpha = st.number_input("Significance Level (α)", min_value=0.01, max_value=0.99, value=0.05, step=0.01)
-tail_type = st.radio("Test Type", ("Two-tailed", "One-tailed"))
+if 'alpha' not in ss:
+    ss.alpha = 0.05
+alpha = st.number_input("Significance Level (α)", min_value=0.01, max_value=0.99, value=ss.alpha, step=0.0001,format="%.4f", key='alpha')
+
+if 'tail_type' not in ss:
+    ss.tail_type = "Two-tailed"
+tail_type = st.radio("Test Type", ("Two-tailed", "One-tailed"), key='tail_type')
 
 if tail_type == "One-tailed":
-    alternative = st.radio("Alternative Hypothesis", ("Greater", "Less"))
+    if 'alternative' not in ss:
+        ss.alternative = "Greater"
+    alternative = st.radio("Alternative Hypothesis", ("Greater", "Less"), key='alternative')
 else:
     alternative = None
 
 # Test-specific inputs
 if test_type == "One Sample T-Test":
-    sample_size = st.number_input("Sample Size", min_value=2, step=1, value=30)
-    sample_mean = st.number_input("Sample Mean", value=0.0, step=0.1)
-    sample_std = st.number_input("Sample Standard Deviation", min_value=0.0001, value=1.0, step=0.1)
-    hypothesized_mean = st.number_input("Hypothesized Mean", value=0.0, step=0.1)
+    if 'sample_size' not in ss:
+        ss.sample_size = 30
+    sample_size = st.number_input("Sample Size", min_value=2, step=1, value=ss.sample_size, key='sample_size')
+    
+    if 'sample_mean' not in ss:
+        ss.sample_mean = 0.0
+    sample_mean = st.number_input("Sample Mean", value=ss.sample_mean, step=0.0001,format="%.4f", key='sample_mean')
+    
+    if 'sample_std' not in ss:
+        ss.sample_std = 1.0
+    sample_std = st.number_input("Sample Standard Deviation", min_value=0.0001, value=ss.sample_std, step=0.0001,format="%.4f", key='sample_std')
+    
+    if 'hypothesized_mean' not in ss:
+        ss.hypothesized_mean = 0.0
+    hypothesized_mean = st.number_input("Hypothesized Mean", value=ss.hypothesized_mean, step=0.0001,format="%.4f", key='hypothesized_mean')
 
 elif test_type == "Two Sample T-Test":
-    n1 = st.number_input("Sample Size (Group 1)", min_value=2, step=1, value=30)
-    mean1 = st.number_input("Sample Mean (Group 1)", value=0.0, step=0.1)
-    std1 = st.number_input("Sample Standard Deviation (Group 1)", min_value=0.0001, value=1.0, step=0.1)
-    n2 = st.number_input("Sample Size (Group 2)", min_value=2, step=1, value=30)
-    mean2 = st.number_input("Sample Mean (Group 2)", value=0.0, step=0.1)
-    std2 = st.number_input("Sample Standard Deviation (Group 2)", min_value=0.0001, value=1.0, step=0.1)
+    if 'n1' not in ss:
+        ss.n1 = 30
+    n1 = st.number_input("Sample Size (Group 1)", min_value=2, step=1, value=ss.n1, key='n1')
+    
+    if 'mean1' not in ss:
+        ss.mean1 = 0.0
+    mean1 = st.number_input("Sample Mean (Group 1)", value=ss.mean1, step=0.0001, format="%.4f",key='mean1')
+    
+    if 'std1' not in ss:
+        ss.std1 = 1.0
+    std1 = st.number_input("Sample Standard Deviation (Group 1)", min_value=0.0001, value=ss.std1, step=0.0001,format="%.4f", key='std1')
+    
+    if 'n2' not in ss:
+        ss.n2 = 30
+    n2 = st.number_input("Sample Size (Group 2)", min_value=2, step=1, value=ss.n2, key='n2')
+    
+    if 'mean2' not in ss:
+        ss.mean2 = 0.0
+    mean2 = st.number_input("Sample Mean (Group 2)", value=ss.mean2, step=0.0001,format="%.4f", key='mean2')
+    
+    if 'std2' not in ss:
+        ss.std2 = 1.0
+    std2 = st.number_input("Sample Standard Deviation (Group 2)", min_value=0.0001, value=ss.std2, step=0.0001,format="%.4f", key='std2')
 
 elif test_type == "Paired T-Test":
-    n = st.number_input("Number of Pairs", min_value=2, step=1, value=30)
-    mean_diff = st.number_input("Mean of Differences", value=0.0, step=0.1)
-    std_diff = st.number_input("Standard Deviation of Differences", min_value=0.0001, value=1.0, step=0.1)
+    if 'n' not in ss:
+        ss.n = 30
+    n = st.number_input("Number of Pairs", min_value=2, step=1, value=ss.n, key='n')
+    
+    if 'mean_diff' not in ss:
+        ss.mean_diff = 0.0
+    mean_diff = st.number_input("Mean of Differences", value=ss.mean_diff, step=0.0001, format="%.4f",key='mean_diff')
+    
+    if 'std_diff' not in ss:
+        ss.std_diff = 1.0
+    std_diff = st.number_input("Standard Deviation of Differences", min_value=0.0001, value=ss.std_diff, step=0.0001,format="%.4f", key='std_diff')
 
 elif test_type == "One Sample Z-Test":
-    sample_size = st.number_input("Sample Size", min_value=2, step=1, value=30)
-    sample_mean = st.number_input("Sample Mean", value=0.0, step=0.1)
-    population_std = st.number_input("Population Standard Deviation", min_value=0.0001, value=1.0, step=0.1)
-    hypothesized_mean = st.number_input("Hypothesized Mean", value=0.0, step=0.1)
+    if 'sample_size' not in ss:
+        ss.sample_size = 30
+    sample_size = st.number_input("Sample Size", min_value=2, step=1, value=ss.sample_size, key='sample_size')
+    
+    if 'sample_mean' not in ss:
+        ss.sample_mean = 0.0
+    sample_mean = st.number_input("Sample Mean", value=ss.sample_mean, step=0.0001,format="%.4f", key='sample_mean')
+    
+    if 'population_std' not in ss:
+        ss.population_std = 1.0
+    population_std = st.number_input("Population Standard Deviation", min_value=0.0001, value=ss.population_std, step=0.0001,format="%.4f", key='population_std')
+    
+    if 'hypothesized_mean' not in ss:
+        ss.hypothesized_mean = 0.0
+    hypothesized_mean = st.number_input("Hypothesized Mean", value=ss.hypothesized_mean, step=0.0001,format="%.4f", key='hypothesized_mean')
 
 elif test_type == "Chi-Square Goodness of Fit Test":
-    num_categories = st.number_input("Number of Categories", min_value=2, step=1, value=3)
-    observed = [st.number_input(f"Observed Frequency {i+1}", min_value=0, step=1, value=10) for i in range(num_categories)]
-    expected = [st.number_input(f"Expected Frequency {i+1}", min_value=0.0001, step=1.0, value=10.0) for i in range(num_categories)]
+    if 'num_categories' not in ss:
+        ss.num_categories = 3
+    num_categories = st.number_input("Number of Categories", min_value=2, step=1, value=ss.num_categories, key='num_categories')
+    
+    if 'observed' not in ss:
+        ss.observed = [10] * num_categories
+    observed = [st.number_input(f"Observed Frequency {i+1}", min_value=0, step=1, value=ss.observed[i] if i < len(ss.observed) else 10, key=f'observed_{i}') for i in range(num_categories)]
+    
+    if 'expected' not in ss:
+        ss.expected = [10.0] * num_categories
+    expected = [st.number_input(f"Expected Frequency {i+1}", min_value=0.0001, step=1.0, value=ss.expected[i] if i < len(ss.expected) else 10.0, key=f'expected_{i}') for i in range(num_categories)]
+    
+    if 'alpha' not in ss:
+        ss.alpha = 0.05
+    alpha = st.number_input("Significance Level (α)", min_value=0.01, max_value=0.99, value=ss.alpha, step=0.01, key='alpha')
+    
+col1, col2 = st.columns(2)
+with col1:
+    calculate_button = st.button("Calculate", key="calculate_button")
+with col2:
+    reset_button = st.button("Reset", key="reset_button")
 
-# Calculate button
-if st.button("Calculate"):
+if reset_button:
+    reset_fields()
+    st.experimental_rerun()
+
+if calculate_button:
     if test_type == "One Sample T-Test":
         result = calculate_one_sample_t_test(sample_size, sample_mean, sample_std, hypothesized_mean, alpha, tail_type, alternative)
         statistic, p_value, reject_null, df = result
@@ -143,7 +223,9 @@ if st.button("Calculate"):
         result = calculate_chi_square_goodness_of_fit(observed, expected, alpha)
         statistic, p_value, reject_null, df = result
         statistic_name = "Chi-square statistic"
-    
+
+
+    # ...
     # Display results
     st.write(f"{statistic_name}: {statistic:.4f}")
     st.write(f"P-value: {p_value:.4f}")
